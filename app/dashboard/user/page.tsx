@@ -1,97 +1,114 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Input } from "@/components/ui/input"
-import { Briefcase, Search, Moon, Sun, Heart } from "lucide-react"
-import { useTheme } from "next-themes"
-import { JobCard } from "@/components/job-card"
-import { CollapsibleFilter, type FilterState } from "@/components/collapsible-filter"
-import { ProfileMenu } from "@/components/profile-menu"
-import { useAuth } from "@/lib/auth-context"
-import { useRouter } from "next/navigation"
-import { LanguageSwitcher } from "@/components/language-switcher"
+import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Briefcase, Search, Moon, Sun, Heart } from "lucide-react";
+import { useTheme } from "next-themes";
+import { JobCard } from "@/components/job-card";
+import { CollapsibleFilter, type FilterState } from "@/components/collapsible-filter";
+import { ProfileMenu } from "@/components/profile-menu";
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
+// TypeScript types
 type Job = {
-  id: number
-  title: string
-  company?: string
-  location: string
-  salary_text: string
-  salary_min?: string
-  salary_max?: string
-  type?: string
-  posted_at: string
-  saved?: boolean
-  description?: string
-}
+  id: number;
+  title: string;
+  company?: string;
+  location: string;
+  salary_text: string;
+  salary_min?: string;
+  salary_max?: string;
+  type?: string;
+  posted_at: string;
+  saved?: boolean;
+  description?: string;
+};
+
+// JobCard expects these props
+type JobCardProps = {
+  id: number;
+  title: string;
+  company?: string;
+  location: string;
+  salary: string;      // salary_text থেকে map করা হবে
+  posted: string;      // posted_at থেকে map করা হবে
+  type?: string;
+  description?: string;
+  saved?: boolean;
+  onSave: (id: number) => void;
+};
 
 export default function UserDashboard() {
-  const { user, isLoggedIn } = useAuth()
-  const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [jobs, setJobs] = useState<Job[]>([])
+  const { user, isLoggedIn } = useAuth();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [jobs, setJobs] = useState<JobCardProps[]>([]);
   const [filters, setFilters] = useState<FilterState>({
     jobTypes: [],
     locations: [],
     salaryRange: [0, 150000],
-  })
-  const { theme, setTheme } = useTheme()
+  });
+  const { theme, setTheme } = useTheme();
 
   // Redirect if not logged in
   useEffect(() => {
-    if (!isLoggedIn) router.push("/auth/login")
-  }, [isLoggedIn, router])
+    if (!isLoggedIn) router.push("/auth/login");
+  }, [isLoggedIn, router]);
 
   // Fetch jobs from API
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await fetch("https://msts.live/tolet/jobs.php")
-        const data = await res.json()
-        // Map API fields to Job type
-        const jobsFromAPI: Job[] = data.map((job: any, index: number) => ({
+        const res = await fetch("https://msts.live/tolet/jobs.php");
+        const data = await res.json();
+
+        const jobsFromAPI: JobCardProps[] = data.map((job: any, index: number) => ({
           id: index + 1,
           title: job.title,
           company: job.company || "Unknown Company",
           location: job.location,
-          salary_text: job.salary_text,
-          salary_min: job.salary_min,
-          salary_max: job.salary_max,
+          salary: job.salary_text,
+          posted: job.posted_at,
           type: job.type || "Full Time",
-          posted_at: job.posted_at,
-          saved: false,
           description: job.description || "",
-        }))
-        setJobs(jobsFromAPI)
-      } catch (error) {
-        console.error("Error fetching jobs:", error)
-      }
-    }
-    fetchJobs()
-  }, [])
+          saved: false,
+          onSave: () => {}, // placeholder
+        }));
 
-  if (!isLoggedIn) return null
+        setJobs(jobsFromAPI);
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+    };
+
+    fetchJobs();
+  }, []);
+
+  if (!isLoggedIn) return null; // wait for auth
 
   const toggleSave = (id: number) => {
-    setJobs(jobs.map((job) => (job.id === id ? { ...job, saved: !job.saved } : job)))
-  }
+    setJobs(jobs.map((job) => (job.id === id ? { ...job, saved: !job.saved } : job)));
+  };
 
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.company!.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchQuery.toLowerCase())
+      job.location.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesJobType = filters.jobTypes.length === 0 || filters.jobTypes.includes(job.type!)
-    const matchesLocation = filters.locations.length === 0 || filters.locations.includes(job.location)
+    const matchesJobType = filters.jobTypes.length === 0 || filters.jobTypes.includes(job.type!);
+    const matchesLocation = filters.locations.length === 0 || filters.locations.includes(job.location);
 
-    return matchesSearch && matchesJobType && matchesLocation
-  })
+    return matchesSearch && matchesJobType && matchesLocation;
+  });
 
-  const savedJobsCount = jobs.filter((j) => j.saved).length
+  const savedJobsCount = jobs.filter((j) => j.saved).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+      {/* Header */}
       <header className="border-b border-border/50 bg-card/40 backdrop-blur-xl sticky top-0 z-40 shadow-sm">
         <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
@@ -125,10 +142,10 @@ export default function UserDashboard() {
         </div>
       </header>
 
+      {/* Main Content */}
       <div className="flex">
         <CollapsibleFilter onFilterChange={setFilters} />
 
-        {/* Main Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="mb-8 animate-slide-in-down">
             <div className="mb-6">
@@ -139,6 +156,7 @@ export default function UserDashboard() {
                 Explore {filteredJobs.length} opportunities matching your criteria
               </p>
             </div>
+
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative flex items-center">
@@ -157,7 +175,12 @@ export default function UserDashboard() {
           <div className="space-y-4">
             {filteredJobs.length > 0 ? (
               filteredJobs.map((job) => (
-                <JobCard key={job.id} {...job} onSave={toggleSave} saved={jobs.find((j) => j.id === job.id)?.saved} />
+                <JobCard
+                  key={job.id}
+                  {...job}
+                  onSave={() => toggleSave(job.id)}
+                  saved={job.saved}
+                />
               ))
             ) : (
               <div className="text-center py-16 animate-fade-in">
@@ -172,5 +195,5 @@ export default function UserDashboard() {
         </main>
       </div>
     </div>
-  )
+  );
 }
