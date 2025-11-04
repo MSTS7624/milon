@@ -1,8 +1,19 @@
-import type React from "react"
+"use client";
+
+import React from "react";
+import { AuthProvider } from "@/lib/auth-context";
+import { ThemeProvider } from "next-themes";
+
 export default function UserLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  return <>{children}</>
+  return (
+    <ThemeProvider attribute="class">
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    </ThemeProvider>
+  );
 }

@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "client"; // ensure client-side rendering
 
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
@@ -12,28 +13,13 @@ import { useRouter } from "next/navigation";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
 // TypeScript types
-type Job = {
-  id: number;
-  title: string;
-  company?: string;
-  location: string;
-  salary_text: string;
-  salary_min?: string;
-  salary_max?: string;
-  type?: string;
-  posted_at: string;
-  saved?: boolean;
-  description?: string;
-};
-
-// JobCard expects these props
 type JobCardProps = {
   id: number;
   title: string;
   company?: string;
   location: string;
-  salary: string;      // salary_text থেকে map করা হবে
-  posted: string;      // posted_at থেকে map করা হবে
+  salary: string;
+  posted: string;
   type?: string;
   description?: string;
   saved?: boolean;
@@ -86,7 +72,7 @@ export default function UserDashboard() {
     fetchJobs();
   }, []);
 
-  if (!isLoggedIn) return null; // wait for auth
+  if (!isLoggedIn) return null;
 
   const toggleSave = (id: number) => {
     setJobs(jobs.map((job) => (job.id === id ? { ...job, saved: !job.saved } : job)));
