@@ -1,33 +1,26 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import { ThemeProvider } from "@/components/theme-provider"
-import { AuthProvider } from "@/lib/auth-context"
-import "./globals.css"
+'use client'
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+import React from "react"
+import { useAuth } from "@/lib/auth-context"
 
-export const metadata: Metadata = {
-  title: "JobHub - Find Your Dream Job",
-  description: "Professional job portal connecting talented professionals with opportunities",
-  generator: "v0.app",
-}
+export default function UserDashboardPage() {
+  const { user, logout } = useAuth()
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+  if (!user) {
+    return <div className="p-6 text-center">Loading user data...</div>
+  }
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>{children}</AuthProvider>
-        </ThemeProvider>
-        <Analytics />
-      </body>
-    </html>
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Welcome, {user.name}</h1>
+      <p className="mb-4">Email: {user.email}</p>
+
+      <button
+        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+        onClick={logout}
+      >
+        Logout
+      </button>
+    </div>
   )
 }
