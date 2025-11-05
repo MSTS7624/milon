@@ -1,5 +1,5 @@
 "use client";
-export const dynamic = "client"; // ensure client-side rendering
+export const dynamic = "force-dynamic"; // ঠিক আছে
 
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
