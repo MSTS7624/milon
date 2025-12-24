@@ -45,32 +45,33 @@ export default function UserDashboard() {
 
   // Fetch jobs from API
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const res = await fetch("https://msts.live/tolet/jobs.php");
-        const data = await res.json();
+  const fetchJobs = async () => {
+    try {
+      // cache: 'no-store' দিলে সবসময় লেটেস্ট ডাটা আসবে
+      const res = await fetch("https://msts.live/tolet/jobs.php", { cache: 'no-store' });
+      const data = await res.json();
 
-        const jobsFromAPI: JobCardProps[] = data.map((job: any, index: number) => ({
-          id: index + 1,
-          title: job.title,
-          company: job.company || "Unknown Company",
-          location: job.location,
-          salary: job.salary_text,
-          posted: job.posted_at,
-          type: job.type || "Full Time",
-          description: job.description || "",
-          saved: false,
-          onSave: () => {}, // placeholder
-        }));
+      const jobsFromAPI: JobCardProps[] = data.map((job: any) => ({
+        id: job.id,
+        title: job.title,
+        company: job.company || "JobHub Partner", // API তে company না থাকলে এটি দেখাবে
+        location: job.location,
+        salary: job.salary, // API এর salary কী এর সাথে মিলল
+        posted: job.posted, // API এর posted কী এর সাথে মিলল
+        type: job.type || "Full Time",
+        description: job.description || "",
+        saved: false,
+        onSave: () => {},
+      }));
 
-        setJobs(jobsFromAPI);
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-      }
-    };
+      setJobs(jobsFromAPI);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+    }
+  };
 
-    fetchJobs();
-  }, []);
+  fetchJobs();
+}, []);
 
   if (!isLoggedIn) return null;
 

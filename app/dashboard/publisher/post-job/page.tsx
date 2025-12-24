@@ -29,6 +29,8 @@ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
   setLoading(true)
 
+  console.log("Submitting Data:", formData);
+
   try {
     const res = await fetch("https://msts.live/tolet/post_job.php", {
       method: "POST",
